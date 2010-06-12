@@ -25,6 +25,10 @@ benchmarks/dead-conn
 benchmarks/deadconn
 benchmarks/event-http
 benchmarks/http-client
+benchmarks/new-thread-delay
+benchmarks/new.dat
+benchmarks/old-thread-delay
+benchmarks/old.dat
 benchmarks/pong-server
 benchmarks/simple
 benchmarks/static-http
