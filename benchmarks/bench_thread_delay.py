@@ -40,9 +40,11 @@ def benchmark(which, lo, hi):
             sys.stderr.write(' %.3f' % elapsed)
             times.append(elapsed)
         times.sort()
-        print '    *** %.3f' % times[int(len(times)/2)]
-        print >> fp, ' '.join(map(str, [n, times[int(len(times)/2)], times[0], times[-1]]))
+        print '    *** %.3f' % times[0]
+        median = times[int(len(times)/2)]
+        mean = sum(times) / len(times)
+        print >> fp, ' '.join(map(str, [n, median, mean, times[0], times[-1]]))
         fp.flush()
 
 benchmark('old', 1000, 20000)
-benchmark('new', 10000, 4e6)
+benchmark('new', 10000, 3.5e6)
