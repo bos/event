@@ -5,7 +5,7 @@ ghc-bench-flags := -package network -package network-bytestring \
 	-package mtl
 
 ifdef USE_GHC_IO_MANAGER
-	ghc-bench-flags += -DUSE_GHC_IO_MANAGER
+	ghc-flags += -DUSE_GHC_IO_MANAGER
 endif
 
 ghc-opt-flags = -O2
