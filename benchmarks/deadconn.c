@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
     }
   }
   printf("%d connections created ...\n", ccreat);
+  fflush(stdout);
   while (1)
     sleep(10);
   return 0;
