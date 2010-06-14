@@ -74,7 +74,8 @@ int main(int argc, char *argv[]) {
       write(sfd, req, strlen(req));
       ++ccreat;
       errors = 0;
-      printf("%d\n", ccreat);
+      if (isatty(1))
+	printf("%d\n", ccreat);
     } else {
       sleep(1);
       if (++errors < MAX_CONNECT_ERRORS)
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
     }
   }
   printf("%d connections created ...\n", ccreat);
-  fflush(stdout);
+  fclose(stdout);
   while (1)
     sleep(10);
   return 0;

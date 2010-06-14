@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, re, subprocess, sys, time, urlparse
+import os, re, signal, subprocess, sys, time, urlparse
 
 def run(cmdline):
     rc = os.system(cmdline)
@@ -16,6 +16,8 @@ def qrange(lo,hi):
 
 pat = re.compile(r'(?:Requests per second|Time per request):\s+([0-9.]+)')
 
+dead = True
+
 def benchmark(which, url, lo, hi):
     fp = open('%s.dat' % which, 'a')
     (scheme, netloc, path, params, query, fragment) = urlparse.urlparse(url)
@@ -23,20 +25,20 @@ def benchmark(which, url, lo, hi):
         host, port = netloc.split(':')
     else:
         host, port = netloc, '80'
-    d = None
     for n in qrange(lo, hi):
         rpss = []
         lats = []
         print '%d:' % n
-        #continue
+        if dead:
+            d = subprocess.Popen(['deadconn', host, port, str(n)],
+                                 executable='./deadconn',
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT)
+            print 'PID', d.pid
+            sys.stdout.write(os.read(d.stdout.fileno(), 4096))
         for i in xrange(7):
             start = time.time()
-            if True:
-                d = subprocess.Popen(['deadconn', host, port, str(n)],
-                                     executable='./deadconn',
-                                     stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
-                sys.stdout.write(d.stdout.readline())
+            if dead:
                 p = subprocess.Popen(['ab', '-n10000', '-c64', url],
                                      executable='ab', stdout=subprocess.PIPE)
             else:
@@ -51,14 +53,15 @@ def benchmark(which, url, lo, hi):
                     lat = float(m.group(1))
                 elif '[#/sec]' in line:
                     rps = float(m.group(1))
-            if d:
-                d.kill()
             rc = p.wait()
             if rc:
                 print >> sys.stderr, 'FAIL: %d @ %s' % (n, url)
             print '%d: %f %f' % (n, rps, lat)
             rpss.append(rps)
             lats.append(lat)
+        if dead:
+            os.kill(d.pid, signal.SIGKILL)
+            os.waitpid(d.pid, 0)
         fp.write('%d' % n)
         def report(ns):
             mean = sum(ns) / len(ns)
