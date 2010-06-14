@@ -3,6 +3,7 @@
 module System.Event.Thread
     (
       ensureIOManagerIsRunning
+    , ensureIOManagerIsRunningWith
     , threadWaitRead
     , threadWaitWrite
     , threadDelay
@@ -16,8 +17,10 @@ import GHC.Conc (TVar, ThreadId, ThreadStatus(..), atomically, forkIO,
                  labelThread, newTVar, threadStatus, writeTVar)
 import qualified GHC.Conc as Conc
 import Prelude
+import System.Event.Internal (Backend)
 import System.Event.Manager (Event, EventManager, evtRead, evtWrite, loop,
-                             new, registerFd, unregisterFd_, registerTimeout)
+                             newDefaultBackend, newWith, registerFd,
+                             unregisterFd_, registerTimeout)
 import System.IO.Unsafe (unsafePerformIO)
 import System.Posix.Types (Fd)
 
@@ -86,14 +89,14 @@ ioManager :: MVar (Managing ThreadId)
 ioManager = unsafePerformIO $ newMVar None
 {-# NOINLINE ioManager #-}
 
-ensureIOManagerIsRunning :: IO ()
-ensureIOManagerIsRunning
+ensureIOManagerIsRunningWith :: Backend -> IO ()
+ensureIOManagerIsRunningWith backend
   | not threaded = return ()
   | otherwise = modifyMVar_ ioManager $ \old -> do
   maybeMgr <- readIORef eventManager
   mgr <- case maybeMgr of
            Running m -> return m
-           None      -> do m <- new
+           None      -> do m <- newWith backend
                            writeIORef eventManager $! Running m
                            return m
   let create = do
@@ -108,5 +111,8 @@ ensureIOManagerIsRunning
         ThreadFinished -> create
         ThreadDied     -> create
         _other         -> return st
+
+ensureIOManagerIsRunning :: IO ()
+ensureIOManagerIsRunning = ensureIOManagerIsRunningWith =<< newDefaultBackend
 
 foreign import ccall unsafe "rtsSupportsBoundThreads" threaded :: Bool
