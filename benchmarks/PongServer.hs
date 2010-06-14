@@ -20,7 +20,8 @@ import Network.Socket (accept)
 import Network.Socket.ByteString (recv, sendAll)
 #else
 import EventSocket (accept, recv, sendAll)
-import System.Event.Thread (ensureIOManagerIsRunning)
+import System.Event.Thread (ensureIOManagerIsRunningWith)
+import qualified System.Event.Poll as Poll
 #endif
 import System.Console.GetOpt (ArgDescr(ReqArg), OptDescr(..))
 import System.Environment (getArgs)
@@ -36,6 +37,7 @@ main = do
                              , addrSocketType = Stream }
 #ifndef USE_GHC_IO_MANAGER
   ensureIOManagerIsRunning
+  --ensureIOManagerIsRunningWith =<< Poll.new
 #endif
   setResourceLimit ResourceOpenFiles
       ResourceLimits { softLimit = lim, hardLimit = lim }
