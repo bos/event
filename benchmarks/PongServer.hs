@@ -20,7 +20,8 @@ import Network.Socket (accept)
 import Network.Socket.ByteString (recv, sendAll)
 #else
 import EventSocket (accept, recv, sendAll)
-import System.Event.Thread (ensureIOManagerIsRunningWith)
+import System.Event.Thread (ensureIOManagerIsRunning,
+                            ensureIOManagerIsRunningWith)
 import qualified System.Event.Poll as Poll
 #endif
 import System.Console.GetOpt (ArgDescr(ReqArg), OptDescr(..))
