@@ -11,7 +11,7 @@ endif
 ghc-opt-flags = -O2
 cc = gcc
 cc-opt-flags = -O2
-programs := dead-conn deadconn pong-server signal simple static-http \
+programs := dead-conn c-deadconn pong-server simple static-http \
 	thread-delay timers http-client
 
 .PHONY: all
@@ -23,7 +23,7 @@ dead-conn: $(lib) Args.o EventUtil.o EventSocket.o DeadConn.o
 	$(ghc) $(ghc-flags) -threaded -o $@ $(filter %.o,$^) $(lib)
 
 # A C version of the above tool.
-deadconn: deadconn.o
+c-deadconn: c-deadconn.o
 	$(cc) $(cc-opt-flags) -o $@ $(filter %.o,$^)
 
 pong-server: ghc-flags += $(ghc-bench-flags)
