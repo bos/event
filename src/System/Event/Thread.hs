@@ -115,6 +115,6 @@ ensureIOManagerIsRunningWith backend
         _other         -> return st
 
 ensureIOManagerIsRunning :: IO ()
-ensureIOManagerIsRunning = ensureIOManagerIsRunningWith =<< newDefaultBackend
+ensureIOManagerIsRunning = newDefaultBackend >>= ensureIOManagerIsRunningWith
 
 foreign import ccall unsafe "rtsSupportsBoundThreads" threaded :: Bool
