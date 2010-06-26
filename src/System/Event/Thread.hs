@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE BangPatterns, ForeignFunctionInterface, NoImplicitPrelude #-}
 
 module System.Event.Thread
     (
@@ -10,14 +10,16 @@ module System.Event.Thread
     , registerDelay
     ) where
 
-import Control.Concurrent.MVar (MVar, modifyMVar_, newEmptyMVar, newMVar,
-                                putMVar, takeMVar)
+import Control.Concurrent.MVar (modifyMVar_)
 import Data.IORef (IORef, newIORef, readIORef, writeIORef)
+import GHC.Base
 import GHC.Conc (TVar, ThreadId, ThreadStatus(..), atomically, forkIO,
                  labelThread, newTVar, threadStatus, writeTVar)
 import qualified GHC.Conc as Conc
-import Prelude
+import GHC.MVar (MVar, newEmptyMVar, newMVar, putMVar, takeMVar)
 import System.Event.Internal (Backend)
+import GHC.Num (fromInteger)
+import GHC.Real (div)
 import System.Event.Manager (Event, EventManager, evtRead, evtWrite, loop,
                              newDefaultBackend, newWith, registerFd,
                              unregisterFd_, registerTimeout)
@@ -97,12 +99,12 @@ ensureIOManagerIsRunningWith backend
   mgr <- case maybeMgr of
            Running m -> return m
            None      -> do m <- newWith backend
-                           writeIORef eventManager $! Running m
+                           writeIORef eventManager $ Running m
                            return m
   let create = do
-        t <- forkIO $ loop mgr
+        !t <- forkIO $ loop mgr
         labelThread t "IOManager"
-        return $! Running t
+        return $ Running t
   case old of
     None                -> create
     st@(Running t) -> do
