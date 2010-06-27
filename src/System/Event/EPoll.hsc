@@ -74,7 +74,7 @@ new = do
 
 delete :: EPoll -> IO ()
 delete be = do
-  c_close . fromEPollFd . epollFd $ be
+  _ <- c_close . fromEPollFd . epollFd $ be
   return ()
 
 -- | Change the set of events we are interested in for a given file
@@ -165,8 +165,8 @@ epollCreate = do
         c_epoll_create 256 -- argument is ignored
   setCloseOnExec fd
 #endif
-  let !epollFd = EPollFd fd
-  return epollFd
+  let !epFd = EPollFd fd
+  return epFd
 
 epollControl :: EPollFd -> ControlOp -> Fd -> Ptr Event -> IO ()
 epollControl (EPollFd epfd) (ControlOp op) (Fd fd) event =
